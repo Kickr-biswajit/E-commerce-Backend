@@ -112,6 +112,8 @@ export const adminProfile = async(req,res)=>{
             data:admin
         })
     } catch (error) {
+        console.log("Error in adminProfile",error);
+        
         return res.status(500).json({
             success:false,
             message:"Server error in Admin-profile"
