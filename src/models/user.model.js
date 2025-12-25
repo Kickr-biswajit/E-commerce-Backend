@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     },
     dob:{
         type:Date
+    },
+    isBlocked:{
+        type:Boolean,
+        default:false
     }
 })
 const User = mongoose.model('User',userSchema)

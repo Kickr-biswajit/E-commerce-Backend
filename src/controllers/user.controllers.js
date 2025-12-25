@@ -1,6 +1,7 @@
 import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import cloudinary from "../db/cloudinary.js"
 
 const genToken = (id)=>{
     return jwt.sign({id},
@@ -116,5 +117,39 @@ export const userProfile = async(req,res)=>{
         return res.status(500).json({
             message:"Internal Server Error in UserProfile"
         })
+    }
+}
+
+export const updateProfilePic = async(req,res,next)=>{
+    try {
+        if(!req.file){
+            return res.status(400).json({
+                success:false,
+                message:"Profile mage is required"
+            })
+        }
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"NO user Found"
+            })
+        }
+        if(user.profilePicPublicId){
+            await cloudinary.uploader.destroy(user.profilePicPublicId);
+        }
+        user.profilePic = req.file.path;
+        user.profilePicPublicId = req.file.filename;
+
+        await user.save();
+        res.status(200).json({
+            success:true,
+            message:"Profile pic Updated Successfully",
+            data:{profilePic:user.profilePic}
+        })
+    } catch (error) {
+        next(error);
     }
 }

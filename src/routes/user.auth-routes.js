@@ -1,13 +1,16 @@
 import express from 'express'
-import { login, signup, userProfile } from '../controllers/user.controllers.js'
+import { login, signup, updateProfilePic, userProfile } from '../controllers/user.controllers.js'
 import { userProtectRoute } from '../middleware/protect.middleware.js'
+import upload from '../db/multer-cloudinary.js'
 
 const router = express.Router()
 
-router.post('/signup',signup)
+router.post('/signup',signup);
 
-router.post('/login',login)
+router.post('/login',login);
 
-router.get('/profile',userProtectRoute,userProfile)
+router.get('/profile',userProtectRoute,userProfile);
+
+router.put('/profile-pic',userProtectRoute,upload.single("avatar"),updateProfilePic);
 
 export default router

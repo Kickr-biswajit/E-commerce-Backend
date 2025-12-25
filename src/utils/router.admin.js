@@ -6,7 +6,7 @@ import auth from '../routes/admin.auth-routes.js'
 
 const router = Router();
 
-router.use('/product',products);
+router.use('/product',products);    
 
 router.use('/category',category);
 

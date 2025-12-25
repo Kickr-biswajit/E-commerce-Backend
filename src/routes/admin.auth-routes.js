@@ -8,6 +8,6 @@ router.post('/signup',adminSignup);
 
 router.post('/login',login)
 
-router.get('/admin-profile',adminProtectRoute,adminProfile)
+router.get('/profile',adminProtectRoute,adminProfile)
 
 export default router

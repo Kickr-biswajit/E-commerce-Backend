@@ -4,7 +4,6 @@ import connectDB from './db/db.js'
 import user from './utils/router.user.js'
 import admin from './utils/router.admin.js'
 
-
 dotenv.config();
 
 const app = express()
