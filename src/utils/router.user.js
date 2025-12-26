@@ -9,6 +9,6 @@ router.use('/auth',auth);
 
 router.use('/products',products);
 
-router.use('/cart',cart)
+router.use('/cart',cart);
 
 export default router;

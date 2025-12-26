@@ -1,7 +1,6 @@
 import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import cloudinary from "../db/cloudinary.js"
 
 const genToken = (id)=>{
     return jwt.sign({id},
@@ -10,7 +9,6 @@ const genToken = (id)=>{
         }
     )
 }
-
 export const signup = async(req,res)=>{
     try {
         const {name,email,phoneNumber,password}=req.body
@@ -120,36 +118,34 @@ export const userProfile = async(req,res)=>{
     }
 }
 
-export const updateProfilePic = async(req,res,next)=>{
-    try {
-        if(!req.file){
-            return res.status(400).json({
-                success:false,
-                message:"Profile mage is required"
-            })
-        }
-        const userId = req.user.id;
+export const updateProfilePic = async (req, res, next) => {
+  try {
 
-        const user = await User.findById(userId);
-        if(!user){
-            return res.status(400).json({
-                success:false,
-                message:"NO user Found"
-            })
-        }
-        if(user.profilePicPublicId){
-            await cloudinary.uploader.destroy(user.profilePicPublicId);
-        }
-        user.profilePic = req.file.path;
-        user.profilePicPublicId = req.file.filename;
-
-        await user.save();
-        res.status(200).json({
-            success:true,
-            message:"Profile pic Updated Successfully",
-            data:{profilePic:user.profilePic}
-        })
-    } catch (error) {
-        next(error);
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
     }
-}
+
+    const userId = req.user.id;
+    const imageUrl = req.file.path;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { image: imageUrl },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Profile pic Updated Successfully",
+      data: {
+        image: user.image, // must match schema
+        userId: user._id
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
