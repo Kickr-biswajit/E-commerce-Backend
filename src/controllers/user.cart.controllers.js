@@ -4,7 +4,7 @@ import Cart from "../models/user.cart.model.js";
 export const addToCart = async(req,res,next)=>{
     try {
         const userId = req.user.id;
-        const {productId, quantity=1} = req.body;
+        const {productId, quantity} = req.body;
 
         const product = await Product.findById(productId);
         if(!product){
@@ -21,27 +21,29 @@ export const addToCart = async(req,res,next)=>{
                 totalPrice:0
             })
         }
+
+        const countQuantity = parseInt(quantity,10);
         const itemIndex = cart.items.findIndex(
             item => item.product.toString() === productId
         );
         if(itemIndex > -1){
-            cart.items[itemIndex].quantity+=quantity;
+            cart.items[itemIndex].quantity+=countQuantity;
         }else{
             cart.items.push({
                 product:productId,
-                quantity,
+                quantity:countQuantity,
                 price:product.price
             })
         }
         cart.totalPrice = cart.items.reduce(
-        (sum,item)=>sum + item.price * item.quantity,0
+        (sum,item)=>sum + (item.price)* item.quantity,0
         )
         await cart.save();
         
         return res.status(200).json({
             success:true,
             message:"Cart added Successfully",
-            data:cart
+            data:cart,product
         });
     } catch (error) {
         next(error);

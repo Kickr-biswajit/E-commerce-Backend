@@ -5,7 +5,7 @@ export const allProducts = async(req,res,next)=>{
         const {search}  =req.query;
 
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || 5;
 
         const skip = (page-1)*limit;
         const query = {};
@@ -15,8 +15,8 @@ export const allProducts = async(req,res,next)=>{
         }
 
         const total = await Product.countDocuments(query);
-        const products = await Product.find(query)
-                                      .populate('category','name')
+        const products = await Product.find(query).select('name price images brand ')
+                                      .populate('category', 'name')
                                       .sort({createdAt:-1})
                                       .skip(skip)
                                       .limit(limit);
@@ -33,7 +33,8 @@ export const allProducts = async(req,res,next)=>{
                 page,
                 limit,
                 total,
-                totalPages:Math.ceil(total/limit)
+                totalPages:Math.ceil(total/limit),
+                search
             },
             data:products
         });

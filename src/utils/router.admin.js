@@ -13,8 +13,8 @@ router.use('/category',category);
 
 router.use('/user',adminUser);
 
-router.use('/auth',auth)
+router.use('/auth',auth);
 
-router.use('/banner',banner)
+router.use('/banner',banner);
 
 export default router

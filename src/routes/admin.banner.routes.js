@@ -19,6 +19,6 @@ router.get('/:bannerId',adminProtectRoute,getBannerById);
 
 router.delete('/:bannerId',adminProtectRoute,deleteBanner);
 
-router.put('/:bannerId',adminProtectRoute,editBanner)
+router.put('/:bannerId',adminProtectRoute,imageUpload("bannerImage",upload),editBanner);
 
 export default router;

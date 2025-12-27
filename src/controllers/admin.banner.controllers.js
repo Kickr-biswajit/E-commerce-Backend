@@ -105,20 +105,27 @@ export const deleteBanner = async(req,res,next)=>{
 export const editBanner = async(req,res,next)=>{
     try {
         const bannerId = req.params.bannerId;
-        const {title,description,bannerImage} = req.body;
+        const {title,description} = req.body;
 
-        const banner = await Banner.findByIdAndUpdate(bannerId,
-            {new:true}
-        );
+        const banner = await Banner.findById(bannerId);
         if(!banner){
             return res.status(400).json({
                 success:false,
                 message:"No banner found"
             })
         }
+        
+        if(!req.file){
+            return res.status(400).json({
+                success:false,
+                message:"Image is required"
+            })
+        }
+        const bannerImage = req.file.path
+
         if(title) banner.title = title;
         if(description) banner.description = description;
-        if(bannerImage) banner.bannerImage = bannerImage;
+        if(bannerImage) banner.bannerImage = bannerImage
 
         await banner.save();
 

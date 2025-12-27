@@ -7,10 +7,12 @@ import { addProduct,
          getProductsByCategory
          } from '../controllers/admin.product.controllers.js';
 import { adminProtectRoute } from '../middleware/admin.protectMiddleware.js';
+import { imageUpload } from '../middleware/image.middleware.js';
+import { upload } from '../db/cloudinary.js';
 
 const router = express.Router();
 
-router.post('/add',adminProtectRoute,addProduct);
+router.post('/add',adminProtectRoute,imageUpload("images",upload),addProduct);
 
 router.get('/all',adminProtectRoute,getMyProducts);
 

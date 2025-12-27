@@ -2,14 +2,13 @@ import Category from "../models/admin.category.model.js";
 import Product from "../models/admin.product.model.js";
 import error from "../utils/utils.js";
 
-export const addProduct = async(req,res)=>{
+export const addProduct = async(req,res,next)=>{
     try {
         const adminId = req.admin.id;
         const {
             name,
             description,
             price,
-            images,
             brand,
             minimumAge,
             highlights,
@@ -18,7 +17,7 @@ export const addProduct = async(req,res)=>{
             category
         } = req.body;
         
-        if(!name || !price || !brand || !category || !highlights){
+        if(!name || !price || !brand || !category){
             return res.status(400).json({
                 success:false,
                 message:"All Fields are Required"
@@ -33,11 +32,18 @@ export const addProduct = async(req,res)=>{
                 message:"Category Doesnot Exist"
             })
         }
+        if(!req.file){
+            return res.status(400).json({
+                success:false,
+                message:"Product image is required"
+            })
+        }
+        const images = req.file.path;
         const product = await Product.create({
             name,
             description,
             price,
-            images,
+            images:images,
             brand,
             minimumAge,
             highlights,
