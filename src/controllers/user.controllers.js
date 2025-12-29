@@ -1,6 +1,7 @@
 import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import transporter from "../db/nodemailer.js"
 
 const genToken = (id)=>{
     return jwt.sign({id},
@@ -71,6 +72,13 @@ export const login = async(req,res)=>{
             return res.status(400).json({
                 success:false,
                 message:"User not found"
+            })
+        }
+
+        if(user.isBlocked){
+            return res.status(400).json({
+                success:false,
+                message:"Your account is Blocked By admin"
             })
         }
         const isMatchPassword = await bcrypt.compare(password,user.password)
@@ -149,3 +157,166 @@ export const updateProfilePic = async (req, res, next) => {
     next(error);
   }
 };
+
+export const sendOtp = async(req,res,next)=>{
+    try {
+        const {email} = req.body;
+        if(!email){
+            return res.status(400).json({
+                success:false,
+                message:"Email is required"
+            })
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"No user Found for this email"
+            })
+        }
+        user.otp = otp;
+        user.otpExpiry = otpExpiry;
+        await user.save();
+
+        await transporter.sendMail({
+            from:process.env.EMAIL_USER,
+            to:email,
+            subject:"OTP Verification",
+            html:`<p>Your OTP is :<b>${otp}</b>(Valid for 10 minutes)</p>`
+        })
+        return res.status(200).json({
+            success:true,
+            message:"OTP sent to your Email"
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const verifyOtp = async(req,res,next)=>{
+    try {
+        const {email, otp} = req.body;
+        if(!email || !otp){
+            return res.status(400).json({
+                success:false,
+                message:"All fields are reqquired"
+            })
+        }
+
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"Email isnt exist"
+            })
+        }
+        if(!user.otp || user.otp !== Number(otp)){
+            return res.status(400).json({
+                success:false,
+                message:"Invalid OTP"
+            })
+        }
+        if(user.otpExpiry < Date.now()){
+            return res.status(400).json({
+                success:false,
+                message:"Expired OTP"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"OTP Verified Successfully"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const resetPassword = async(req,res,next)=>{
+    try {
+        const {email, otp, newPassword} = req.body;
+        if(!email || !otp || !newPassword){
+            return res.status(400).json({
+                success:false,
+                message:"All fields are required"
+            })
+        }
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"Email doesnt Exist"
+            })
+        }
+        if(!user.otp || user.otp !== Number(otp)){
+            return res.status(400).json({
+                success:false,
+                message:"Invalid OTP"
+            })
+        }
+        if(user.otpExpiry < Date.now()){
+            return res.status(400).json({
+                success:false,
+                message:"Expired OTP"
+            })
+        }
+        const hashedPassword = await bcrypt.hash(newPassword,10);
+        user.password = hashedPassword;
+
+        user.otp = null;
+        user.otpExpiry = null;
+        await user.save();
+
+        return res.status(200).json({
+            success:true,
+            message:"Password reset Successfully",
+            data:user
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const forgotPassword = async(req,res,next)=>{
+    try {
+        const {email,otp} = req.body;
+        if(!email || !otp){
+            return res.status(400).json({
+                success:false,
+                message:"All fields are required"
+            })
+        }
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"No email exist"
+            })
+        }
+        if(!user.otp || user.otp !== Number(otp)){
+            return res.status(400).json({
+                success:false,
+                message:"Invalid OTP"
+            })
+        }
+        if(user.otpExpiry < Date.now()){
+            return res.status(400).json({
+                success:false,
+                message:"Expired OTP"
+            })
+        }
+        user.otp = null;
+        user.otpExpiry = null;
+        await user.save();
+
+        return res.status(200).json({
+            success:true,
+            message:"Successfull forgetPassword",
+            data:user
+        });
+    } catch (error) {
+        next(error);
+    }
+}

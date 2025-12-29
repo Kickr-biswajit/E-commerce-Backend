@@ -1,4 +1,5 @@
 import Product from "../models/admin.product.model.js";
+import Notification from "../models/notification.model.js";
 import Order from "../models/user.order.model.js";
 
 export const buyItems = async(req,res,next)=>{
@@ -13,6 +14,7 @@ export const buyItems = async(req,res,next)=>{
             })
         }
         const product = await Product.findById(productId);
+
         if(!product){
             return res.status(400).json({
                 success:false,
@@ -29,7 +31,8 @@ export const buyItems = async(req,res,next)=>{
         const totalAmount = product.price * quantity;
 
         const paymentStatus = paymentMethod === "COD" ? "PENDING" : "PAID";
-
+        console.log('////////////',totalAmount);
+        
         const order = await Order.create({
             user:userId,
             items:[
@@ -59,7 +62,8 @@ export const buyItems = async(req,res,next)=>{
 
 export const totalOrderHistroy = async(req,res,next)=>{
     try {
-        const order = await Order.find()
+        const userId = req.user.id;
+        const order = await Order.find({user:userId}).sort({createdAt:-1});
         if(!order){
             return res.status(400).json({
                 success:false,
@@ -78,14 +82,36 @@ export const totalOrderHistroy = async(req,res,next)=>{
 
 export const getMyOrderedItems = async(req,res,next)=>{
     try {
+        const userId = req.user.id
         const orderId = req.params.orderId;
 
-        const order = await Order.findById(orderId);
+        const order = await Order.findOne({_id:orderId, user:userId}).populate('items.product').populate('user','name email');
         
         return res.status(200).json({
             success:true,
             message:"My order details",
             data:order
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getOrderNotification = async(req,res,next)=>{
+    try {
+        const userId = req.user.id;
+
+        const notifictions = await Notification.find({userId}).sort({createdAt:-1});
+        if(!notifictions){
+            return res.status(400).json({
+                success:false,
+                message:"Empty Nofications"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:`Your Notification for Order`,
+            data:notifictions
         })
     } catch (error) {
         next(error);

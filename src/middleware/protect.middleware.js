@@ -13,7 +13,7 @@ export const userProtectRoute = async(req,res,next)=>{
                 message:"No token Provided"
             })
         }
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
         req.user = {
             id:decoded.id
