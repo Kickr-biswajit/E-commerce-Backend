@@ -3,29 +3,24 @@ import Product from "../models/admin.product.model.js"
 
 export const addCategory = async(req,res)=>{
     try {
-        const {name}=req.body
-        if(!name){
-            return res.status(400).json({
-                success:false,
-                message:"Category Name is Required"
-            })
-        }
+        const {name, subName}=req.body
 
-        const existingCategory = await Category.findOne({name})
-        if(existingCategory){
+        if(!name || !subName){
             return res.status(400).json({
                 success:false,
-                message:"This category Names is Already exist"
-            })
+                message:"Category Name and Subname is Required"
+            })  
         }
         
-        const category = await  Category.create({name})
+        const category = await  Category.create({name, subName})
         return res.status(201).json({
             success:true,
             message:"Category created successfully",
             data:category
         })
     } catch (error) {
+        console.log(error);
+        
         return res.status(500).json({
             success:false,
             message:"Server error in addCategory"

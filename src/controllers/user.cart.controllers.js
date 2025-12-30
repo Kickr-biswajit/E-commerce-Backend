@@ -1,5 +1,6 @@
 import Product from "../models/admin.product.model.js";
 import Cart from "../models/user.cart.model.js";
+import Order from "../models/user.order.model.js";
 
 export const addToCart = async(req,res,next)=>{
     try {
@@ -111,3 +112,53 @@ export const removeFromCart = async (req, res, next) => {
     next(error);
   }
 };
+
+export const buyAllCartProduct = async(req,res,next)=>{
+  try {
+    const userId = req.user.id;
+    const {paymentMethod} = req.body;
+    if(!paymentMethod){
+      return res.status(400).json({
+        success:false,
+        message:"Choose field to pay"
+      })
+    }
+    const cart = await Cart.findOne({user:userId}).populate("items.product");
+    
+    if(!cart){
+      return res.status(400).json({
+        success:false,
+        message:"No product Found"
+      })
+    }
+    let totalAmount = 0;
+    cart.items.forEach(item=>{
+      totalAmount += item.price * item.quantity
+    });
+
+    const order = await Order.create({
+        user:userId,
+        items:cart.items,
+        totalAmount,
+        paymentMethod
+    });
+
+    for (const item of cart.items) {
+      await Product.findByIdAndUpdate(
+        item.product._id,
+        {$inc:{stock: -item.quantity}}
+      );
+    }
+    cart.items = [];
+    cart.totalPrice = 0;
+    await cart.save();
+
+    return res.status(200).json({
+      success:true,
+      message:"Orders Placed Successfully",
+      data:order
+    })
+  } catch (error) {
+    next(error);    
+  }
+}

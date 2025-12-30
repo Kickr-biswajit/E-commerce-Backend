@@ -31,7 +31,6 @@ export const buyItems = async(req,res,next)=>{
         const totalAmount = product.price * quantity;
 
         const paymentStatus = paymentMethod === "COD" ? "PENDING" : "PAID";
-        console.log('////////////',totalAmount);
         
         const order = await Order.create({
             user:userId,
@@ -63,9 +62,9 @@ export const buyItems = async(req,res,next)=>{
 export const totalOrderHistroy = async(req,res,next)=>{
     try {
         const userId = req.user.id;
-        const order = await Order.find({user:userId}).sort({createdAt:-1});
-        if(!order){
-            return res.status(400).json({
+        const orders = await Order.find({user:userId}).sort({createdAt:-1});
+        if(orders.length===0){
+            return res.status(404).json({
                 success:false,
                 message:"Empty ordered list"
             })
@@ -73,7 +72,7 @@ export const totalOrderHistroy = async(req,res,next)=>{
         return res.status(200).json({
             success:true,
             message:"Orders fetched Successfully",
-            data:order
+            data:orders
         })
     } catch (error) {
         next(error)
@@ -82,11 +81,20 @@ export const totalOrderHistroy = async(req,res,next)=>{
 
 export const getMyOrderedItems = async(req,res,next)=>{
     try {
-        const userId = req.user.id
+        const userId = req.user.id;
         const orderId = req.params.orderId;
 
-        const order = await Order.findOne({_id:orderId, user:userId}).populate('items.product').populate('user','name email');
+        const order = await Order.findOne({
+              _id: orderId,
+              user: userId
+        }).populate('items.product').populate('user','name email');
         
+        if(!order){
+            return res.status(400).json({
+                success:false,
+                message:"No order Found"
+            })
+        }
         return res.status(200).json({
             success:true,
             message:"My order details",

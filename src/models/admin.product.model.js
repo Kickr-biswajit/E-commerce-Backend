@@ -13,50 +13,48 @@ const productSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    images:[{
-        type:String,
-        required:true
+    productImage:[{
+        type:String
     }],
+    material:{
+        type:String,
+        enum: ["Cotton", "Silk", "Wool"]
+    },
+    idealFor:{
+        type:String,
+        enum: ["Baby Boys", "Baby Girls", "Unisex", "Every Kid"]
+    },
     brand:{
         type:String,
     },
     minimumAge:{
         type:String
     },
-    highlights: [
-     {
-        idealFor: {
-        type: String,
-        enum: ["Baby Boys", "Baby Girls", "Unisex", "Every Kid"]
-        },
-         material: String,
-         colour: String,
-         height: String,
-         width: String,
-         length: String,
-         weight: String
-         }
-    ],
-
-    createdBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Admin'
+    colour:{
+        type:String,
+        required:true
     },
     stock:{
-        type:String,
-        enum:['Available','Out of Stuck', 'Only few Left','Hot deal','Coming Soon'],
-        default:'Available'
+        type:Number,
+        required:true,
+        default:0,
     },
-    delivery:{
-        type:String,
-        enum:['Cash on Delivery','Online Payment'],
-        default:'Cash on delivery'
-    },
+   delivery:
+    [
+        { 
+            type: String,
+            enum:["Cash on Delivery","Online Payment"]
+        }
+     ],
     category:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Category",
         required:true
-    }   
+    } ,
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Admin'
+    }  
 },{timestamps:true})
 
 const Product = mongoose.model("Product",productSchema);

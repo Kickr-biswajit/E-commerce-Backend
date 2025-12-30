@@ -12,7 +12,7 @@ import { upload } from '../db/cloudinary.js';
 
 const router = express.Router();
 
-router.post('/add',adminProtectRoute,imageUpload("images",upload),addProduct);
+router.post('/add',adminProtectRoute,imageUpload("productImage",upload),addProduct);
 
 router.get('/all',adminProtectRoute,getMyProducts);
 
